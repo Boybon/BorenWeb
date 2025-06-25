@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot Interface</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        #chatlogs {
+            height: 80%;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        #chatbox {
+            position: flex;
+        }
+        /* Input and button container */
+        #input-container {
+            display: flex;
+            align-items: center;
+            padding: 10px 1px 10px 10px; /* Adjusted padding for better spacing */
+        }
+        /* "Send" button on the left */
+        #chatbox button {
+            margin-right: 5px; /* Add spacing between button and input */
+            padding: 10px 15px;
+            font-size: 16px;
+            border: 1px solid #007bff;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+        }
+
+        #chatbox button:hover {
+            background-color: #0056b3;
+        }
+
+        #chatbox textarea {
+            flex: 1; /* Take up remaining space */
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            resize: none; /* Prevent manual resizing */
+            overflow: auto; /* Allow scrollbars for overflow */
+            height: 50px; /* Fixed height */
+        }
+        .move {
+            position: flex;
+            
+        }
+    </style>
+</head>
+<body>
+    <footer class="move">
+    <div id="chatbox">
+        <div id="chatlogs"></div>
+        <div id="input-container">
+            <button onclick="sendMessage()" id="chat-toggle">Send</button>
+            <textarea id="userInput" placeholder="Type your message..."></textarea>
+        </div>
+    </div>
+    </footer>
+    <script>
+        // Toggle chatbox visibility
+        document.getElementById("chat-toggle").addEventListener("click", function() {
+            const chatbox = document.getElementById("chatbox");
+            if (chatbox.style.display === "none" || chatbox.style.display === "") {
+                chatbox.style.display = "block";
+            } else {
+                chatbox.style.display = "none";
+            }
+        });
+
+        // Send message to the server
+        function sendMessage() {
+        let userMessage = document.getElementById("userInput").value;
+        if (userMessage.trim() === "") return;
+
+        $("#chatlogs").append(`<p><strong>You:</strong> ${userMessage}</p>`);
+
+        $.ajax({
+            url: "http://127.0.0.1:5000/ask",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({ message: userMessage }),
+            success: function(response) {
+                $("#chatlogs").append(`<p><strong>Bot:</strong> ${response.response}</p>`);
+            },
+            error: function() {
+                $("#chatlogs").append(`<p><strong>Bot:</strong> Error: Could not get a response.</p>`);
+            }
+        });
+
+            document.getElementById("userInput").value = ""; // Clear input field
+        }
+
+        // Submit message on Enter key
+        const userInput = document.getElementById("userInput");
+        userInput.addEventListener("keydown", function (event) {
+            if (event.key === "Enter" && !event.shiftKey) {
+                event.preventDefault(); // Prevent newline
+                sendMessage(); // Call sendMessage function
+            }
+        });
+    </script>
+</body>
+</html>
